@@ -20,12 +20,12 @@ export class DomainsService {
       limit: parsedLimit,
     };
   }
-
+  // Fetch all domains with pagination
   async getAllDomains(query: PaginationDto, res: Response) {
     try {
       const { page = 1, limit = 10 } = query;
       const paginationQuery = this.getPaginateQuery(page, limit);
-      const total = await this.domainModel.countDocuments({}).exec();
+      const total = await this.domainModel.countDocuments({}).exec(); // get total documents count
       const result = await this.domainModel
         .find({})
         .skip(paginationQuery.skip)
@@ -47,6 +47,7 @@ export class DomainsService {
     }
   }
 
+  // Create new domain
   async createDomain(data: CreateDomain, res: Response) {
     try {
       const { domainName, email } = data;
@@ -58,6 +59,7 @@ export class DomainsService {
         this.userModel.findOne({ email: email?.toLowerCase() }).lean().exec(),
       ]);
 
+      // Check domain with same name exists or not
       if (checkDomainExists) {
         return res.status(400).json({
           code: 400,
@@ -65,6 +67,7 @@ export class DomainsService {
           data: null,
         });
       }
+      // Check user with given email exists or not
       if (!userExists) {
         return res.status(400).json({
           code: 400,
@@ -73,6 +76,7 @@ export class DomainsService {
         });
       }
 
+      // create domain
       const response = await this.domainModel.create({
         domainName: domainName,
         ownerName: userExists.name,
@@ -93,6 +97,7 @@ export class DomainsService {
     }
   }
 
+  // Update domain
   async updateDomain(domainId: string, data: CreateDomain, res: Response) {
     try {
       const { domainName, email } = data;
@@ -109,6 +114,7 @@ export class DomainsService {
           this.userModel.findOne({ email: email.toLowerCase() }).lean().exec(),
         ]);
 
+      // Check domain with given ID exists or not
       if (!checkDomainId) {
         return res.status(400).json({
           code: 400,
@@ -116,6 +122,7 @@ export class DomainsService {
           data: null,
         });
       }
+      // Check If new domain name exists in DB or not
       if (checkNewDomainName) {
         return res.status(400).json({
           code: 400,
@@ -123,6 +130,7 @@ export class DomainsService {
           data: null,
         });
       }
+      // Check user with given email exists or not
       if (!checkEmailExists) {
         return res.status(400).json({
           code: 400,
@@ -156,6 +164,7 @@ export class DomainsService {
     }
   }
 
+  // Get all domains by ownerId
   async getDomainsByOwner(ownerId: string, res: Response) {
     try {
       const domainsList = await this.domainModel
@@ -176,6 +185,7 @@ export class DomainsService {
     }
   }
 
+  // Search by domain name
   async searchDomain(query: string, res: Response) {
     try {
       const response = await this.domainModel
